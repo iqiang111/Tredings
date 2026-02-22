@@ -57,8 +57,8 @@ python main.py
 ## 部署到 Ubuntu 服务器
 
 ### 1. 克隆项目
-
-git clone https://github.com/yourname/tredings.git /opt/tredings
+```
+git clone https://github.com/iqiang111/Tredings.git /opt/tredings
 ```
 
 ### 2. 初始化环境
