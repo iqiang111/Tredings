@@ -1,43 +1,69 @@
 import requests
-from datetime import datetime, timedelta, timezone
+from bs4 import BeautifulSoup
 
-from config import GITHUB_TOKEN, TRENDING_DAYS, TRENDING_COUNT
+from config import TRENDING_SINCE, TRENDING_COUNT
 
 
 def fetch_trending() -> list[dict]:
-    since = (datetime.now(timezone.utc) - timedelta(days=TRENDING_DAYS)).strftime(
-        "%Y-%m-%d"
-    )
-    params = {
-        "q": f"created:>{since} stars:>50",
-        "sort": "stars",
-        "order": "desc",
-        "per_page": TRENDING_COUNT,
+    url = f"https://github.com/trending?since={TRENDING_SINCE}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     }
-    headers = {"Accept": "application/vnd.github+json"}
-    if GITHUB_TOKEN:
-        headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
 
-    resp = requests.get(
-        "https://api.github.com/search/repositories",
-        params=params,
-        headers=headers,
-        timeout=30,
-    )
+    resp = requests.get(url, headers=headers, timeout=30)
     resp.raise_for_status()
-    data = resp.json()
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    articles = soup.find_all("article", class_="Box-row")
 
     repos = []
-    for item in data.get("items", []):
+    for article in articles[:TRENDING_COUNT]:
+        # Repo name and URL
+        h2 = article.find("h2")
+        if not h2:
+            continue
+        a_tag = h2.find("a")
+        if not a_tag:
+            continue
+        repo_path = a_tag["href"].strip("/")
+        repo_url = f"https://github.com/{repo_path}"
+
+        # Description
+        p_tag = article.find("p")
+        description = p_tag.get_text(strip=True) if p_tag else "No description"
+
+        # Language
+        lang_span = article.find("span", itemprop="programmingLanguage")
+        language = lang_span.get_text(strip=True) if lang_span else "Unknown"
+
+        # Stars and forks
+        links = article.find_all("a", class_="Link--muted")
+        stars = ""
+        forks = ""
+        for link in links:
+            href = link.get("href", "")
+            text = link.get_text(strip=True).replace(",", "")
+            if "/stargazers" in href:
+                stars = text
+            elif "/forks" in href:
+                forks = text
+
+        # Stars today/this week/this month
+        stars_delta = ""
+        delta_span = article.find("span", class_="d-inline-block float-sm-right")
+        if delta_span:
+            stars_delta = delta_span.get_text(strip=True)
+
         repos.append(
             {
-                "name": item["full_name"],
-                "url": item["html_url"],
-                "description": item.get("description") or "No description",
-                "stars": item["stargazers_count"],
-                "language": item.get("language") or "Unknown",
-                "topics": item.get("topics", []),
-                "created_at": item["created_at"],
+                "name": repo_path,
+                "url": repo_url,
+                "description": description,
+                "stars": stars,
+                "forks": forks,
+                "language": language,
+                "stars_delta": stars_delta,
             }
         )
     return repos

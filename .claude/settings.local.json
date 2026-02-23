@@ -3,7 +3,12 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:docs.github.com)",
-      "WebFetch(domain:resend.com)"
+      "WebFetch(domain:resend.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(cd:*)",
+      "Bash(conda run:*)",
+      "Bash(where.exe conda 2>/dev/null || cmd.exe /c \"where conda\" 2>/dev/null)",
+      "Bash(/c/Users/Gates/miniconda3/envs/bug/python.exe:*)"
     ]
   }
 }

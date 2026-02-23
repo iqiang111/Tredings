@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+.vscode/
+node_modules/
+dist/
+.claude/
+.git/
+.gitignore
+README.md
+cron.log

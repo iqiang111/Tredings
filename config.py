@@ -27,5 +27,5 @@ EMAIL_FROM: str = _require("EMAIL_FROM")
 EMAIL_TO: str = _require("EMAIL_TO")
 
 # Trending
-TRENDING_DAYS: int = int(os.getenv("TRENDING_DAYS", "7"))
+TRENDING_SINCE: str = os.getenv("TRENDING_SINCE", "daily")  # daily, weekly, monthly
 TRENDING_COUNT: int = int(os.getenv("TRENDING_COUNT", "15"))

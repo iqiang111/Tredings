@@ -22,15 +22,13 @@ client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=120)
 
 
 def summarize(repos: list[dict]) -> str:
-    lines = ["Here are today's trending GitHub repositories (sorted by stars):\n"]
+    lines = ["Here are today's trending GitHub repositories:\n"]
     for i, r in enumerate(repos, 1):
-        topics = ", ".join(r["topics"]) if r["topics"] else "none"
         lines.append(
-            f"{i}. {r['name']} - {r['stars']} stars - {r['language']}\n"
+            f"{i}. {r['name']} - ⭐ {r['stars']} - {r['language']}\n"
             f"   Description: {r['description']}\n"
-            f"   Topics: {topics}\n"
+            f"   Trending: {r['stars_delta']}\n"
             f"   URL: {r['url']}\n"
-            f"   Created: {r['created_at'][:10]}\n"
         )
     user_msg = "\n".join(lines)
 
